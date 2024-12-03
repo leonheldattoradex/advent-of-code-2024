@@ -2,15 +2,27 @@ use regex::Regex;
 use std::fs;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let input = fs::read_to_string("./input.txt")?;
+    let mut input = fs::read_to_string("./input.txt")?;
+
+    input = input.replace("\n", "");
+
+    // filter file to exclude muls between a don't() and a do()
+    let re = Regex::new(r"don't\(\).*?do\(\)")?;
+
+    let toggled_blocks_removed = re.replace_all(&input, "");
+
+    println!("{}", toggled_blocks_removed);
 
     // match mul instructions
     let re = Regex::new(r"mul\(\d+,\d+\)")?;
 
-    let results: Vec<_> = re.find_iter(&input).map(|mat| mat.as_str()).collect();
+    let results: Vec<_> = re
+        .find_iter(&toggled_blocks_removed)
+        .map(|mat| mat.as_str())
+        .collect();
 
     // lazily match the arguments to the mul instruction again
-    let re = Regex::new(r"\d+,\d+")?;
+    let re: Regex = Regex::new(r"\d+,\d+")?;
 
     let mut acc = 0;
 
